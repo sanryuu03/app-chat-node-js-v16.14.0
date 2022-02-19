@@ -13,11 +13,30 @@
         background: grey;
         padding: 20px;
       }
-      input {
+      li {
+          padding: 5px;
+      }
+      /* genap = even*/
+      li:nth-child(even) {
+          background: #333;
+          color: white;
+      }
+      /* ganjil = odd*/
+      li:nth-child(odd) {
+
+      }
+      #namaUser {
         float: left;
-        width: 70%;
+        width: 20%;
         height: 30px;
         border: none;
+      }
+      #textBox {
+        float: left;
+        width: 40%;
+        height: 30px;
+        border: none;
+        margin-left: 10px;
       }
       button {
         float: left;
@@ -29,7 +48,11 @@
   <body>
     <ul id="messages"></ul>
 
-    <form><input type="text" id="textBox" /><button>Kirim</button></form>
+    <form>
+        <input type="text" id="namaUser" placeholder="nama kamu"/>
+        <input type="text" id="textBox" placeholder="chat kamu"/>
+        <button>Kirim</button>
+    </form>
     <script src="/socket.io/socket.io.js"></script>
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"
@@ -39,8 +62,10 @@
     ></script>
     <script>
       let socket = io();
+      let username = '';
       $("form").submit(function () {
-        socket.emit("newMessage", $("#textBox").val());
+          username = $('#namaUser').val();
+        socket.emit("newMessage", username + ' ' + $("#textBox").val());
         // setelah user selesai ketik, kita kosongkan text boxnya
         $("#textBox").val("");
         // biar dia tidak reload halaman
@@ -49,7 +74,7 @@
 
       // untuk menampilkan frontend
       socket.on("newMessage", function (msg) {
-        $("#messages").append($("<li>").text(msg));
+        $("#messages").append($("<li>").text(msg + ' ||Pada: ' + Date()));
       });
     </script>
   </body>
