@@ -6,37 +6,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>realtime chat using Socket io node js</title>
     <style media="screen">
-        form{
-            position: absolute;
-            bottom: 0px;
-            width: 96%;
-            background: grey;
-            padding: 20px;
-        }
-        input{
-            float: left;
-            width: 70%;
-            height: 30px;
-            border: none;
-        }
-        button{
-            float: left;
-            width: 20%;
-            height: 33px;
-        }
+      form {
+        position: absolute;
+        bottom: 0px;
+        width: 96%;
+        background: grey;
+        padding: 20px;
+      }
+      input {
+        float: left;
+        width: 70%;
+        height: 30px;
+        border: none;
+      }
+      button {
+        float: left;
+        width: 20%;
+        height: 33px;
+      }
     </style>
   </head>
   <body>
-      <ul id="messages"></ul>
+    <ul id="messages"></ul>
 
-      <form>
-          <input type="text" id="textBox"><button>Kirim</button>
-      </form>
+    <form><input type="text" id="textBox" /><button>Kirim</button></form>
+    <script src="/socket.io/socket.io.js"></script>
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"
       integrity="sha512-qzrZqY/kMVCEYeu/gCm8U2800Wz++LTGK4pitW/iswpCbjwxhsmUwleL1YXaHImptCHG0vJwU7Ly7ROw3ZQoww=="
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     ></script>
+    <script>
+      let socket = io();
+      $("form").submit(function () {
+        socket.emit("newMessage", $("#textBox").val());
+        // setelah user selesai ketik, kita kosongkan text boxnya
+        $("#textBox").val("");
+        // biar dia tidak reload halaman
+        return false;
+      });
+
+      // untuk menampilkan frontend
+      socket.on("newMessage", function (msg) {
+        $("#messages").append($("<li>").text(msg));
+      });
+    </script>
   </body>
 </html>
