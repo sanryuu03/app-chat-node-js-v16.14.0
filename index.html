@@ -23,7 +23,8 @@
       }
       /* ganjil = odd*/
       li:nth-child(odd) {
-
+        background: #f5eec2;
+        color: skyblue;
       }
       #namaUser {
         float: left;
@@ -43,16 +44,41 @@
         width: 20%;
         height: 33px;
       }
+      .hidden {
+          display: none;
+      }
+      #rightBox {
+          float: left;
+          width: 70%;
+      }
+      #leftBox {
+          float: left;
+          width: 25%;
+      }
     </style>
   </head>
   <body>
-    <ul id="messages"></ul>
+    <div id="homepage">
+    <h1>Selamat datang chatroom</h1>
+    <input type="text" id="namaUser" placeholder="nama kamu"/>
+    <button id="submitName">Masuk</button>
+    </div>
 
-    <form>
-        <input type="text" id="namaUser" placeholder="nama kamu"/>
-        <input type="text" id="textBox" placeholder="chat kamu"/>
-        <button>Kirim</button>
-    </form>
+    <div id="chatroom" class="hidden">
+        <div id="leftBox">
+            <h2>Daftar User yang online</h2>
+            <ul id="userLists"></ul>
+        </div>
+        <div id="rightBox">
+            <ul id="messages"></ul>
+        </div>
+        
+        <form>
+            <input type="text" id="textBox" placeholder="chat kamu"/>
+            <button>Kirim</button>
+        </form>
+    </div>
+    
     <script src="/socket.io/socket.io.js"></script>
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"
@@ -61,21 +87,67 @@
       referrerpolicy="no-referrer"
     ></script>
     <script>
-      let socket = io();
-      let username = '';
-      $("form").submit(function () {
-          username = $('#namaUser').val();
+        let socket = io();
+        let username = '';
+        let isTyping = false;
+
+        $("form").submit(function () {
+            username = $('#namaUser').val();
         socket.emit("newMessage", username + ' ' + $("#textBox").val());
         // setelah user selesai ketik, kita kosongkan text boxnya
         $("#textBox").val("");
+        isTyping = false;
         // biar dia tidak reload halaman
         return false;
-      });
+        });
 
-      // untuk menampilkan frontend
-      socket.on("newMessage", function (msg) {
+        // daftar user
+        socket.on('addOnlineUsers', function(usernames) {
+            $('#userLists').empty();
+            for(let i = 0; i<usernames.length; i++){
+                $('#userLists').append($('<li id="user_' + usernames[i] + '">').text(usernames[i]));
+            }
+        });
+
+        // untuk menampilkan frontend
+        socket.on("newMessage", function (msg) {
         $("#messages").append($("<li>").text(msg + ' ||Pada: ' + Date()));
-      });
+        $(".temporary").remove();
+        });
+
+        // ketika user daftar nama -> masuk ke chat room
+        $('#submitName').click(function() {
+            // validasi apakah namanya sudah ada atau belum
+            if($('#namaUser') != '') {
+                // menguji nama exist(sudah ada) atau belum
+                username = $('#namaUser').val();
+                socket.emit('registerUser', username);
+            }
+        });
+        
+        // menerima respon dari server saat register
+        socket.on('registerRespond', function(status) {
+            if(status == false) {
+                alert('user sudah ada, cari nama lain');
+            }else{
+                $('#chatroom').removeClass('hidden');
+                $('#homepage').addClass('hidden');
+            }
+        });
+
+        // ketika user sedang mengetik
+        $('#textBox').keyup(function(){
+            if(isTyping == false){
+                socket.emit('newTyping', username + ' sedang mengetik...');
+                console.log('sedang mengetik');
+            }
+
+            isTyping = true;
+        });
+
+        socket.on('newTyping', function(msg){
+            $("#messages").append($('<li class="temporary">').text(msg));
+        });
     </script>
   </body>
 </html>
